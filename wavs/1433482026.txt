@@ -1,0 +1,44 @@
+id	nam	sex	age	birth
+1	zhang	man	22	19910520
+2	zhang	man	22	19910520
+3	zhangweijin	man	22	19910520
+4	a	man	22	19910521
+5	d	NULL	NULL	NULL
+6	ss	man	22	19910520
+8	sss	man	22	19910520
+11	dddd	man	22	19910520
+13	ddd	man	22	19910520
+15	ddd1	man	22	19910520
+16	ddd2	woman	22	19910520
+17	ddd	man	22	19910530
+18	ddd1	man	22	19920209
+22	444	man	22	19910520
+123	'12'	'man'	11	'19910520'
+124	'12'	'man'	11	'19910520'
+125	'12'	'man'	11	'19910520'
+126	'12'	'man'	11	'19910520'
+127	'12'	'man'	11	'19910520'
+128	'12'	'man'	11	'19910520'
+129	'12'	'man'	11	'19910520'
+130	'12'	'man'	11	'19910520'
+131	'12'	'man'	11	'19910520'
+132	'12'	'man'	11	'19910520'
+133	'12'	'man'	11	'19910520'
+134	'12'	'man'	11	'19910520'
+135	'12'	'man'	11	'19910520'
+136	'12'	'man'	11	'19910520'
+137	'12'	'man'	11	'19910520'
+138	'12'	'man'	11	'19910520'
+mysql> use helloworld;
+Database changed
+mysql> select * from use where id = 1;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'use where id = 1' at line 1
+mysql> select * from user where id = 1;
++----+-------+------+------+----------+
+| id | nam   | sex  | age  | birth    |
++----+-------+------+------+----------+
+|  1 | zhang | man  | 22   | 19910520 |
++----+-------+------+------+----------+
+1 row in set (0.05 sec)
+
+mysql> notee;

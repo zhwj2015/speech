@@ -1,0 +1,24 @@
+{
+  "name": "quickstart",
+  "version": "0.0.0",
+  "description": "",
+  "main": "gulpfile.js",
+  "dependencies": {
+    "gulp": "^3.8.11",
+    "react": "^0.13.3",
+    "jquery": ">1.9.1",
+    "del": "^1.2.0",
+    "browserify": "^10.2.4",
+    "reactify": "^1.1.1",
+    "vinyl-source-stream": "^1.1.0",
+    "gulp-stylus": "^2.0.3"
+  },
+  "devDependencies": {
+    
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

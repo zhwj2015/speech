@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="static/css/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="static/css/basic.css">
+    <link rel="stylesheet" href="static/css/index.css">
+</head>
+<body>
+<div id="fullBg" />
+<div class="container">
+  <form class="form-signin" action="login" method="POST">       
+      <h1 class="form-signin-heading">Please Login</h1>
+      <input type="text" class="form-control js-username" name="username" placeholder="用户名" required="" autofocus="" />
+      <input type="password" class="form-control js-pwd" name="password" placeholder="密码" required=""/> 
+      <button id="login" class="btn btn-lg btn-primary btn-block" type="submit">Log in</button>
+      {% if error_msg %}
+       <div class="alert alert-danger">
+         <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+         {{ error_msg }}
+      </div>
+      {% endif %}
+  </form>
+  
+    
+   
+  </div>
+  <!--<p class="text-center sign-up"><strong>Sign up</strong> for a new account</p>-->
+</div>
+</body>
+<script type="text/javascript" src="static/js/jquery.min.js"></script>
+<script type="text/javascript" src="static/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="static/bundle.js"></script>
+</html>
