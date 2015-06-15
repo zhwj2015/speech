@@ -17,6 +17,7 @@ from tutorial.quickstart.serializers import UsersSerializer, AdminSerializer, Ke
 from django.contrib.auth.hashers import make_password, check_password
 
 from django.http.response import HttpResponseRedirect
+from django.core import serializers
 class JSONResponse(HttpResponse):
     '''
     An HttpResponse that renders its content into JSON
@@ -123,6 +124,35 @@ def main(request):
     username = request.session['uid']
     return render(request, 'main.html', {'username': username})
 
+def user(request):
+    users = Users.objects.all()
+    #print users.user_id
+    print users.count()
+    print serializers.serialize('json', users)
+    return HttpResponse(serializers.serialize('json', users,use_natural_primary_keys=True))
+    #return render(request, 'user.html', {'users': users, 'count': users.count()})
+@csrf_exempt
+def update(request):
+    user_id = request.POST['user_id']
+    user = Users.objects.all().get(user_id=user_id).update(request.data)
+    return HttpResponse(True)
+
+class Users11z():
+    def user(request):
+        users = Users.objects.all()
+        #print users.user_id
+        print users.count()
+        print serializers.serialize('json', users)
+        return HttpResponse(serializers.serialize('json', users,use_natural_primary_keys=True))
+        #return render(request, 'user.html', {'users': users, 'count': users.count()})
+    @csrf_exempt
+    def update(request):
+        user_id = request.POST['user_id']
+        user = User.objects.all().get(user_id=user_id).update(request.data)
+        return HttpResponse(True)
+
+
+
 @csrf_exempt
 def login(request):
     username = request.POST['username']
@@ -154,3 +184,5 @@ def sign(request):
         blnPwd = check_password(admin.password, pwd)
     except Exception,e:
         return HttpResponse(e)
+
+

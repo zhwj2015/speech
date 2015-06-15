@@ -29,9 +29,17 @@ class Admin(models.Model):
     def get_password(self):
         return self.password
 
+class Positions(models.Model):
+    pid = models.CharField(max_length=20,primary_key=True)
+    name = models.CharField(max_length=300)
+    condition = models.TextField()
+    # class Meta:
+    #     unique_together = (('name'))
+    def __unicode__(self):
+        return self.pid
 
 class Users(models.Model):
-    user_id = models.CharField(max_length=20,primary_key=True)
+    user_id = models.CharField(max_length=20)
     name = models.CharField(max_length=250)
     sex = models.IntegerField()
     age = models.IntegerField()
@@ -39,13 +47,7 @@ class Users(models.Model):
     position = models.ForeignKey('Positions')
     score = models.IntegerField()
 
-class Positions(models.Model):
-    pid = models.CharField(max_length=20,primary_key=True)
-    name = models.CharField(max_length=300)
-    condition = models.TextField()
 
-    def __unicode__(self):
-        return self.pid
 
 
 class Wavs(models.Model):
@@ -54,7 +56,7 @@ class Wavs(models.Model):
     path = models.CharField(max_length=500)
     created = models.DateTimeField(auto_now_add=True)
     user_id = models.ForeignKey('Users')
-    score = models.IntegerField()
+    score = models.IntegerField(12)
 
     class Meta:
         ordering = ('created',)

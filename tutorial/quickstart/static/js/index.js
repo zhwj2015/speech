@@ -26,3 +26,14 @@ $(".form-signin").submit(function () {
 
 	return false;
 });
+
+
+
+$(".js-user").click(function () {
+	var content = $(".js-content");
+	function callback(result) {
+		content.empty();
+		content.append(result);
+	}
+	func_ajax("/user", "GET", "", callback);
+});

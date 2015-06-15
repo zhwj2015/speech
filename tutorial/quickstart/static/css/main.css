@@ -5,3 +5,7 @@
   background-color: #e5e5e5;
   border-bottom: 1px solid #cccccc;
 }
+
+.panel-body li.active {
+	background-color:blue; 
+}

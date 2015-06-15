@@ -30,14 +30,14 @@ gulp.task('css', ['clean'], function() {
 });
  
 // Our JS task. It will Browserify our code and compile React JSX files.
-//gulp.task('js', ['clean'], function() {
-  // Browserify/bundle the JS.
-//  browserify(paths.app_js)
-//    .transform(reactify)
-//    .bundle()
-//    .pipe(source('bundle.js'))
-//    .pipe(gulp.dest('./static/'));
-//});
+gulp.task('jsx', ['clean'], function() {
+  //Browserify/bundle the JS.
+ browserify(paths.app_js)
+   .transform(reactify)
+   .bundle()
+   .pipe(source('main.js'))
+   .pipe(gulp.dest('./static/'));
+});
  
 
 // Our JS task. It will Browserify our code and compile React JSX files.
@@ -55,7 +55,8 @@ gulp.task('js', ['clean'], function() {
 gulp.task('watch', function() {
   gulp.watch(paths.css, ['css']);
   gulp.watch(paths.js, ['js']);
+  gulp.watch(paths.app_js, ['jsx']);
 });
  
 // The default task (called when we run `gulp` from cli)
-gulp.task('default', ['watch', 'css', 'js']);
+gulp.task('default', ['watch', 'css', 'js','jsx']);

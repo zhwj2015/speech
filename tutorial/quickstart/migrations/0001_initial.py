@@ -70,7 +70,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Users',
             fields=[
-                ('user_id', models.CharField(max_length=20, serialize=False, primary_key=True)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('user_id', models.CharField(max_length=20)),
                 ('name', models.CharField(max_length=250)),
                 ('sex', models.IntegerField()),
                 ('age', models.IntegerField()),
@@ -87,7 +88,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=50)),
                 ('path', models.CharField(max_length=500)),
                 ('created', models.DateTimeField(auto_now_add=True)),
-                ('score', models.IntegerField()),
+                ('score', models.IntegerField(verbose_name=12)),
                 ('user_id', models.ForeignKey(to='quickstart.Users')),
             ],
             options={
