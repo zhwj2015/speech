@@ -12,9 +12,12 @@ from tutorial.quickstart.models import Snippet
 from tutorial.quickstart.serializers import SnippetSerializer
 
 from rest_framework.decorators import detail_route
-from tutorial.quickstart.models import Users, Admin, Keymodels, Keywords, Relations
-from tutorial.quickstart.serializers import UsersSerializer, AdminSerializer, KeymodelsSerializer, KeywordsSerializer, RelationsSerializer
+from tutorial.quickstart.models import Users, Admin, Keymodels, Keywords, Relations, Positions
+from tutorial.quickstart.serializers import UsersSerializer, AdminSerializer, KeymodelsSerializer, KeywordsSerializer, RelationsSerializer, PositionsSerializer
 from django.contrib.auth.hashers import make_password, check_password
+from django.shortcuts import render_to_response
+from django.template.context_processors import csrf
+from tutorial.quickstart.util import Util
 
 from django.http.response import HttpResponseRedirect
 from django.core import serializers
@@ -112,47 +115,112 @@ def Admin_list(request, format=None):
             return JSONResponse(serializer.data, status=201)
         return JSONResponse(serializer.errors, status=400)
 
+'''
+    logic
+'''
+
 
 from django.shortcuts import render
 '''
 controller
 '''
+
+'''
+    redirect to index.html
+'''
+
 def index(request):
-    return render(request, 'index.html',{'result': 'test'})
-    
+    return render(request, 'index.html')
+
+'''
+    redict to main.html
+'''
 def main(request):
     username = request.session['uid']
-    return render(request, 'main.html', {'username': username})
-
+    c = {'username': username}
+    c.update(csrf(request))
+    return render_to_response('main.html', c)
+    
+'''
+    get the Users
+    :return JSONResponse Users and Positions
+'''
 def user(request):
     users = Users.objects.all()
+    positions = Positions.objects.all()
     #print users.user_id
-    print users.count()
-    print serializers.serialize('json', users)
-    return HttpResponse(serializers.serialize('json', users,use_natural_primary_keys=True))
-    #return render(request, 'user.html', {'users': users, 'count': users.count()})
-@csrf_exempt
+    object_all = list(users) + list(positions)
+    #the set of users
+    ss = UsersSerializer(users, many=True)
+    #the set of positions
+    ps = PositionsSerializer(positions, many=True)
+    sJson = Util.serializeToJSON(ss)
+    pJson = Util.serializeToJSON(ps)
+    return JSONResponse({'Users': sJson, 'Positions': pJson})
+    
+'''
+    update the User
+    :return if the update is fail return False and if the update is success return User object
+'''
 def update(request):
-    user_id = request.POST['user_id']
-    user = Users.objects.all().get(user_id=user_id).update(request.data)
-    return HttpResponse(True)
+    try:
+        data = request.POST
+        data = dict(data.iterlists())
+        user_id = data.get('data[user_id]')[0]
+        name = data.get('data[name]')[0]
+        sex = data.get('data[sex]')[0]
+        age = data.get('data[age]')[0]
+        birthday = Util.strToTime(str(data.get('data[birthday]')[0]), '%Y-%m-%d')
+        position = Positions.objects.all().get(pid=data.get('data[position][pid]')[0])
+        score = data.get('data[score]')[0]
+        rows = Users.objects.filter(user_id=user_id).update(user_id=user_id, name=name,sex=sex, age=age, birthday=birthday, position=position, score=score)
+        if rows > 0:
+            user = Users.objects.all().get(user_id = user_id)
+            serializer = UsersSerializer(user)
+            return JSONResponse(Util.serializeToJSON(serializer))
+        else:
+            return JSONResponse({"False": False})
+    except Exception, e:
+        return JSONResponse({"False":False})
 
-class Users11z():
-    def user(request):
-        users = Users.objects.all()
-        #print users.user_id
-        print users.count()
-        print serializers.serialize('json', users)
-        return HttpResponse(serializers.serialize('json', users,use_natural_primary_keys=True))
-        #return render(request, 'user.html', {'users': users, 'count': users.count()})
-    @csrf_exempt
-    def update(request):
-        user_id = request.POST['user_id']
-        user = User.objects.all().get(user_id=user_id).update(request.data)
-        return HttpResponse(True)
+
+def add(request):
+    try:
+        data = request.POST
+        data = dict(data.iterlists())
+        name = data.get('data[name]')[0]
+        sex = data.get('data[sex]')[0]
+        age = data.get('data[age]')[0]
+        birthday = Util.strToTime(str(data.get('data[birthday]')[0]), '%Y-%m-%d')
+        position = Positions.objects.all().get(pid=data.get('data[position][pid]')[0])
+        score = data.get('data[score]')[0]
+        user_id = str(Util.getTimestamp())
+        user = Users(user_id=user_id, name=name,sex=sex, age=age, birthday=birthday, position=position, score=score)
+        user.save()
+        serializer = UsersSerializer(user)
+        return JSONResponse(Util.serializeToJSON(serializer))
+    except Exception, e:
+        return JSONResponse({'False': False})
+
+# class Users11z():
+#     def user(request):
+#         users = Users.objects.all()
+#         #print users.user_id
+#         print users.count()
+#         print serializers.serialize('json', users)
+#         return HttpResponse(serializers.serialize('json', users,use_natural_primary_keys=True))
+#         #return render(request, 'user.html', {'users': users, 'count': users.count()})
+#     @csrf_exempt
+#     def update(request):
+#         user_id = request.POST['user_id']
+#         user = User.objects.all().get(user_id=user_id).update(request.data)
+#         return HttpResponse(True)
 
 
+'''
+    login to system
 
+'''
 @csrf_exempt
 def login(request):
     username = request.POST['username']
@@ -168,7 +236,9 @@ def login(request):
             return render(request, 'index.html', {'error_msg': '用户名或密码错误'})
     except Exception,e:
         return render(request, 'index.html', {'error_msg': '用户名或密码错误'})
-
+'''
+    log out
+'''
 def logout(request):
     try:
         del request.session['uid']

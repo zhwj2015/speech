@@ -29,12 +29,22 @@ class Admin(models.Model):
     def get_password(self):
         return self.password
 
+class PositionsManager(models.Manager):
+    def get_by_natural_key(self, name):
+        return self.get(name=name)
+
 class Positions(models.Model):
+    objects = PositionsManager()
     pid = models.CharField(max_length=20,primary_key=True)
-    name = models.CharField(max_length=300)
+    name = models.CharField(max_length=100)
     condition = models.TextField()
+
+    def natural_key(self):
+        return (self.name)
     # class Meta:
     #     unique_together = (('name'))
+    class Meta:
+        unique_together = (( 'name'),)
     def __unicode__(self):
         return self.pid
 

@@ -56,4 +56,5 @@ urlpatterns += [
     url(r'^main', viewss.main),
     url(r'^user', viewss.user),
     url(r'^update',viewss.update),
+    url(r'^add', viewss.add),
 ]

@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
             name='Positions',
             fields=[
                 ('pid', models.CharField(max_length=20, serialize=False, primary_key=True)),
-                ('name', models.CharField(max_length=300)),
+                ('name', models.CharField(max_length=100)),
                 ('condition', models.TextField()),
             ],
         ),
@@ -109,5 +109,9 @@ class Migration(migrations.Migration):
             model_name='relations',
             name='word_id',
             field=models.ForeignKey(to='quickstart.Keywords'),
+        ),
+        migrations.AlterUniqueTogether(
+            name='positions',
+            unique_together=set([('name',)]),
         ),
     ]

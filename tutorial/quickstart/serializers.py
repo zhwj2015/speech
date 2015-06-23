@@ -61,6 +61,7 @@ class UsersSerializer(serializers.ModelSerializer):
             'position',
             'score',
         )
+        depth = 1
 class KeywordsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Keywords
