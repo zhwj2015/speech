@@ -59,6 +59,7 @@ function func_ajax(url, type, param, func) {
 		url:url,
 		type:type,
 		data:param,
+		// contentType: 'application/json',
 		success: func,
 		error: function (XMLHttpRequest, textStatus, errorThrown) {
 		    // 通常 textStatus 和 errorThrown 之中
@@ -111,6 +112,9 @@ var Pheader = React.createClass({
 	}
 });
 
+/**
+*	用户模块窗
+*/
 
 var Umodal = React.createClass({
 	getInitialState: function() {
@@ -124,7 +128,7 @@ var Umodal = React.createClass({
 		user.birthday = birthday;
 		user.position = '';
 		user.score = '';
-		return {user:user, positions: []}//{user_id:'',name:'',sex:'',age:'',birthday:'',position:'',score:'',positions:[]}
+		return {user:user, positions: []}
 	},
 	initUserState: function () {
 		var user = Object();
@@ -139,6 +143,7 @@ var Umodal = React.createClass({
 		user.score = '';
 		return user;
 	},
+	//设置单个属性
 	setKeyValue: function(key, user, value){
 		if (user == '') {
 			user = Object();
@@ -164,10 +169,10 @@ var Umodal = React.createClass({
 			case 'position':
 				  var p = null;
 				  this.state.positions.map(function(position) {
-				  	if (position.id == value) {
+				  	if (position.pid == value) {
 				  		p = position;
 				  	}
-				  })
+				  });
 				  user.position = p;
 				  break;
 			case 'score':
@@ -177,6 +182,7 @@ var Umodal = React.createClass({
 		return user;
 		
 	},
+	//设置user
 	setStateValue: function(data) {
 		if(data!=null) {
 			this.setState({user: data});
@@ -209,6 +215,8 @@ var Umodal = React.createClass({
 	},
 	componentWillReceiveProps: function(nextProps) {
 		var data = nextProps.data_users;
+		
+		//如果data为空初始化data
 		if (data == '' || data == null) {
 			data = this.initUserState();
 		}
@@ -221,11 +229,13 @@ var Umodal = React.createClass({
 	callback: function(result) {
 		if (!('False' in result && result.False == false)) {
 			this.setState({user: result});
+			//修改Panel的值， 回调函数
 			this.props.onCallBack(result);
 			$('#show_modal').modal('hide');
 		}
 		
 	},
+	//处理http请求
 	handleSubmit: function() {
 		var user = this.state.user;
 		var date = new Date(user.birthday);
@@ -242,45 +252,28 @@ var Umodal = React.createClass({
 		}
 
 	},
-	
+	formatTime: function(birthday) {
+		var date = new Date(birthday);
+		return date.getTime().toString();
+	},
 
 	render: function ()  {
 		var that = this;
 		var sselect = this.state.positions.map(function(position) {
-
 			var dom = null;
-			if(that.state.position == position) {
-				dom = <option value={position.id} selected >{position.name}</option>;	
+			
+			if(that.state.user.position.pid == position.pid) {
+				dom = <option value={position.pid} selected >{position.name}</option>;	
 			}else {
-				dom = <option value={position.id}>{position.name}</option>;
+				dom = <option value={position.pid}>{position.name}</option>;
 			}
-			return (
-				dom
-				)
+			
+			return dom;
 		});
-		
+
 		var user = this.state.user;
-		var user_id, name, sex, age, birthday, position, score ;
-		if(user != '') {
-			user_id = user.user_id;
-			name = user.name;
-			sex = user.sex;
-			age = user.age;
-			date = new Date(user.birthday);
-			birthday = date.getTime().toString();
-			position = user.position;
-			score = user.score;
-		}else {
-			user_id = '';
-			name = '';
-			sex = 1;
-			// user = this.setStateValue('sex', user, 1);
-			age = '';
-			date = new Date();
-			birthday = date.getTime().toString();
-			// user = this.setStateValue('birthday', user, date);
-			position = '';
-			score = 0;
+		if (user == '') {
+			user = this.initUserState();
 		}
 		return (
 			<div className="modal" id="show_modal" tabIndex="-1" role="dialog" aria-labelledby="show_title" aria-hidden="true">
@@ -300,24 +293,24 @@ var Umodal = React.createClass({
 							      <label htmlFor="user_id" className="col-sm-2 control-label">职工号</label>
 							      <div className="col-sm-10">
 							         <input type="text" className="form-control" id="user_id" readOnly name="user_id" data-field="user_id"
-							            placeholder="自动生成" value={user_id}/>
+							            placeholder="自动生成" value={user.user_id}/>
 							      </div>
 							   </div>
 							   <div className="form-group">
 							      <label htmlFor="name" className="col-sm-2 control-label">姓名</label>
 							      <div className="col-sm-10">
 							         <input type="text" className="form-control" id="name" name="name" data-field="name" onChange={this.onChange}
-							            placeholder="请输入姓名" value={name}/>
+							            placeholder="请输入姓名" value={user.name}/>
 							      </div>
 							   </div>
 							   <div className="form-group">
 							      <label htmlFor="lastname" className="col-sm-2 control-label">性别</label>
 							      <div className="col-sm-10">
 							         <label className="radio-inline">
-							           <input type="radio" className="col-sm-5" name="sex" id="inlineRadio1" value="1" data-field="sex" onChange={this.onChange} checked={sex==1?true:false } /> 男
+							           <input type="radio" className="col-sm-5" name="sex" id="inlineRadio1" value="1" data-field="sex" onChange={this.onChange} checked={user.sex==1?true:false } /> 男
 							         </label>
 							         <label className="radio-inline">
-							           <input type="radio" className="col-sm-5" name="sex" id="inlineRadio2" value="0" data-field="sex" onChange={this.onChange} checked={sex==0?true:false}/> 女
+							           <input type="radio" className="col-sm-5" name="sex" id="inlineRadio2" value="0" data-field="sex" onChange={this.onChange} checked={user.sex==0?true:false}/> 女
 							         </label>
 							      </div>
 							   </div>
@@ -325,13 +318,13 @@ var Umodal = React.createClass({
 							      <label htmlFor="age" className="col-sm-2 control-label">年龄</label>
 							      <div className="col-sm-10">
 							         <input type="text" className="form-control" id="age" name="age" data-field="age" onChange={this.onChange}
-							            placeholder="请输入年龄" value={age}/>
+							            placeholder="请输入年龄" value={user.age}/>
 							      </div>
 							   </div>
 							   <div className="form-group">
 							      <label htmlFor="age" className="col-sm-2 control-label">出生年月</label>
 							      <div className="col-sm-10">
-							         <DateTimeField ref="birthday" data-field="birthday" dateTime={birthday} inputFormat="MM-DD-YYYY" onChange={this.onTimeChange}/>
+							         <DateTimeField ref="birthday" data-field="birthday" dateTime={this.formatTime(user.birthday)} inputFormat="MM-DD-YYYY" onChange={this.onTimeChange}/>
 							      </div>
 							   </div>
 							   
@@ -349,7 +342,7 @@ var Umodal = React.createClass({
 							      <label htmlFor="score" className="col-sm-2 control-label">评分</label>
 							      <div className="col-sm-10">
 							         <input type="text" className="form-control" id="score" name="score" data-field="score" onChange={this.onChange}
-							            placeholder="请输入评分" value={score}/>
+							            placeholder="请输入评分" value={user.score}/>
 							      </div>
 							   </div>
 							   <div className="modal-footer">
@@ -370,20 +363,29 @@ var Umodal = React.createClass({
 
 
 /**
-* 表格主体
+* 表格
 *
 */
 var Panel = React.createClass({
+	//初始化state
 	getInitialState: function() {
 	    return {user: null, positions:[],users:[], method:'update'};
 	},
-	trClick: function (e) {
+	//点击一行编辑用户信息
+	trDblClick: function (e) {
 		var index = e.target.getAttribute('data-index');
 		var users = this.props.users;
 		var data = users[index];
 		this.setState({user:data})
 		this.setState({method: 'update'});
 		$('#show_modal').modal('show');
+	},
+	trClick: function (e) {
+		var index = e.target.getAttribute('data-index');
+		var checkbox = $('#checkbox'+index);
+		var checked = checkbox.attr('checked');
+		checkbox.attr('checked', !checked) || checkbox.prop('checked', !checked);
+
 	},
 	componentWillMount:function() {
 		var users = this.props.users;
@@ -398,6 +400,7 @@ var Panel = React.createClass({
 		this.setState({positions:positions});
 		this.setState({users:users});
 	},
+	//ajax success callback
 	callback: function(data) {
 		var users = this.state.users;
 		var arrUsers = [];
@@ -423,6 +426,7 @@ var Panel = React.createClass({
 		}
 		this.setState({users:arrUsers});
 	},
+	//添加用户
 	onClick: function() {
 		this.setState({user:''});
 		this.setState({method:'add'});
@@ -435,7 +439,8 @@ var Panel = React.createClass({
 							date = new Date(user.birthday);
 							birthday = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
 							return (
-								<tr onClick={that.trClick} style={{textAlign:'center'}}>
+								<tr onDoubleClick={that.trDblClick} onClick={that.trClick} style={{textAlign:'center'}}>
+									<th data-index={index}><input id={'checkbox' + index} type="checkbox" /></th>
 									<th data-index={index}>{ user.user_id }</th>
 									<th data-index={index}>{ user.name }</th>
 									<th data-index={index}>{ user.sex==1?'男':'女' }</th>
@@ -452,6 +457,7 @@ var Panel = React.createClass({
 				<div className="panel-body js-content">
 					<table className="table table-hover">
 						<thead>
+							<th></th>
 							<th>职工号</th>
 							<th>姓名</th>
 							<th>性别</th>
@@ -472,23 +478,10 @@ var Panel = React.createClass({
 	}
 });
 
-// var Panel = React.createClass({
-	
-// 	render: function () {
-
-// 		var count = this.props.count;
-// 		var users = this.props.users;
-// 		var positions = this.props.positions;
-// 		return (
-// 				<Pbody users={users} positions={positions}/>
-// 			);
-// 	}
-// });
-
 
 function renderUser(data) {
 	React.render(
-		<Panel count={2} users={data.Users} positions={data.Positions}>
+		<Panel count='2' users={data.Users} positions={data.Positions}>
 		</Panel>,
 		document.getElementById('js-content')
 	);
