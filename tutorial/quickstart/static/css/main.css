@@ -8,4 +8,32 @@
 
 .panel-body li.active {
 	background-color:blue; 
+
 }
+.search {
+	width:40px;
+	padding:0;
+	vertical-align: middle;
+	-webkit-transition: width 0.4s ease, left 0.4s ease;
+	transition: width 0.4s ease, left 0.4s ease;
+	-moz-transition: width 0.4s ease, left 0.4s ease;
+	-o-transition:width 0.4s ease, left 0.4s ease;
+}
+.search:hover, .search.active{
+	width:190px;
+}
+.search .form-control {
+ 	height: 24px;
+ 	line-height: 24px;
+ 	width: 0px;
+ 	padding: 0;
+}
+.search .input-group-addon {
+	height:22px;
+	line-height: 22px;
+	padding-top:0;
+	padding-bottom:0;
+}
+/*.search.active .form-control {
+	border: 1px solid #ccc;
+}*/

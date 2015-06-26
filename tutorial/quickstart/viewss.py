@@ -202,6 +202,26 @@ def add(request):
     except Exception, e:
         return JSONResponse({'False': False})
 
+def delete(request):
+    try:
+        data = request.GET
+        data = dict(data)
+        ids = data.get('ids[]')
+        users = []
+        for user_id in ids:
+            user = Users.objects.all().get(user_id=user_id)
+            users.append(user)
+            Users.objects.filter(user_id= user_id).delete()
+        return JSONResponse(ids)
+    except Exception, e:
+        for user in users:
+            user.save()
+        return JSONResponse({'False': False})
+
+
+def search(request):
+    print request.GET.get('keyword')
+    return JSONResponse({"False": False})
 # class Users11z():
 #     def user(request):
 #         users = Users.objects.all()

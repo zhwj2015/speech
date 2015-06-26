@@ -39041,15 +39041,36 @@ $(".js-user").click(function () {
 	UI 
 */
 var Pheader = React.createClass({displayName: "Pheader",
+	onfocus: function() {
+		$('.search').addClass('active');
+	},
+	onblur: function() {
+		$('.search').removeClass('active');
+	},
+	onKeydown: function(e) {
+		var callback = function(result) {
+			console.log(result);
+		}
+		if(e.keyCode == 13) {
+			var keyword = React.findDOMNode(this.refs.keyword).value;
+			func_ajax('/search', 'GET', {keyword: keyword}, callback);
+		}
+	},
 	render: function () {
 		var click = this.props.onClick?this.props.onClick:null;
-		var count = this.props.count? this.props.count:0;
+		var del = this.props.del?this.props.del:null;
 		return (
 			React.createElement("div", {className: "panel-heading"}, 
 				"职工表", 
-				React.createElement("div", {className: "pull-right"}, 
-					React.createElement("a", {className: "glyphicon glyphicon-plus-sign", href: "javascript:void(0)", onClick: click}), 
-					React.createElement("span", {className: "badge"}, count)
+				React.createElement("div", {style: {float:'right'}}, 
+					React.createElement("div", {className: "form-inline"}, 
+						React.createElement("button", {className: "btn btn-default btn-xs", onClick: click}, React.createElement("span", {className: "glyphicon glyphicon-plus-sign", "aria-hidden": "true"}), " 添加"), 
+						React.createElement("button", {className: "btn btn-default btn-xs", onClick: del}, React.createElement("span", {className: "glyphicon glyphicon-trash", "aria-hidden": "true"}), " 删除"), 
+						React.createElement("div", {className: "input-group search"}, 
+						  React.createElement("span", {className: "input-group-addon"}, React.createElement("i", {className: "glyphicon glyphicon-search"})), 
+						  React.createElement("input", {id: "prependedInput", ref: "keyword", className: "form-control", onKeyDown: this.onKeydown, onFocus: this.onfocus, onBlur: this.onblur, type: "text"})
+						)
+					)
 				)
 			)
 			)
@@ -39203,13 +39224,13 @@ var Umodal = React.createClass({displayName: "Umodal",
 
 	render: function ()  {
 		var that = this;
-		var sselect = this.state.positions.map(function(position) {
+		var sselect = this.state.positions.map(function(position, index) {
 			var dom = null;
 			
 			if(that.state.user.position.pid == position.pid) {
-				dom = React.createElement("option", {value: position.pid, selected: true}, position.name);	
+				dom = React.createElement("option", {key: index, value: position.pid, selected: true}, position.name);	
 			}else {
-				dom = React.createElement("option", {value: position.pid}, position.name);
+				dom = React.createElement("option", {key: index, value: position.pid}, position.name);
 			}
 			
 			return dom;
@@ -39313,9 +39334,9 @@ var Umodal = React.createClass({displayName: "Umodal",
 var Panel = React.createClass({displayName: "Panel",
 	//初始化state
 	getInitialState: function() {
-	    return {user: null, positions:[],users:[], method:'update'};
+	    return {user: null, positions:[],users:[], method:'update', states: []};
 	},
-	//点击一行编辑用户信息
+	//点击一行编辑用户信息 double click
 	trDblClick: function (e) {
 		var index = e.target.getAttribute('data-index');
 		var users = this.props.users;
@@ -39324,40 +39345,56 @@ var Panel = React.createClass({displayName: "Panel",
 		this.setState({method: 'update'});
 		$('#show_modal').modal('show');
 	},
+	//single click tr
 	trClick: function (e) {
 		var index = e.target.getAttribute('data-index');
 		var checkbox = $('#checkbox'+index);
 		var checked = checkbox.attr('checked');
-		checkbox.attr('checked', !checked) || checkbox.prop('checked', !checked);
+		var states = this.state.states;
+		states[index] = (states[index] == 0?1:0);
+		this.setState({states: states});
 
 	},
 	componentWillMount:function() {
 		var users = this.props.users;
 		var positions = this.props.positions;
+		var states = [];
+		for(var i=0;i<users.length;i++) {
+			states[i] = 0;
+		}
+		this.setState({states: states});
 		this.setState({positions:positions});
 		this.setState({users:users});
+
 	},
 
 	componentWillReceiveProps: function(nextProps) {
 		var users = nextProps.users;
 		var positions = nextProps.positions;
+		var states = [];
+		for(var i=0;i<users.length;i++) {
+			states[i] = 0;
+		}
+		this.setState({states: states});
 		this.setState({positions:positions});
 		this.setState({users:users});
 	},
-	//ajax success callback
+	//ajax success callback -- add and update
 	callback: function(data) {
 		var users = this.state.users;
 		var arrUsers = [];
 		var flag = 0;
+
 		users.map(function(user) {
 			if(user.user_id == data.user_id) {
-				user.user_id = data.user_id;
-				user.name = data.name;
-				user.sex = data.sex;
-				user.age = data.age;
-				user.birthday = data.birthday;
-				user.position = data.position;
-				user.score = data.score;
+				// user.user_id = data.user_id;
+				// user.name = data.name;
+				// user.sex = data.sex;
+				// user.age = data.age;
+				// user.birthday = data.birthday;
+				// user.position = data.position;
+				// user.score = data.score;
+				user = data;
 				arrUsers = arrUsers.concat(user);
 				flag = 1;
 			}else {
@@ -39365,9 +39402,14 @@ var Panel = React.createClass({displayName: "Panel",
 			}
 
 		});
-		if (flag == 0) {
+
+		var states = this.state.states;
+		if (flag == 0) {//add
 			arrUsers = arrUsers.concat(data);
+			states = states.concat([0]);
 		}
+
+		this.setState({states: states});
 		this.setState({users:arrUsers});
 	},
 	//添加用户
@@ -39376,6 +39418,37 @@ var Panel = React.createClass({displayName: "Panel",
 		this.setState({method:'add'});
 		$('#show_modal').modal('show');
 	},
+	del: function() {
+		var states = this.state.states,
+			users = this.state.users,
+			arrId = [];
+
+		states.map(function(state, index) {
+			if(state == 1) {
+				var id = users[index].user_id;
+				arrId = arrId.concat([id]);
+			}
+		});
+		var arrParam = {ids: arrId}, 
+			that = this;
+		
+		var callback = function(result) {
+			console.log(result);
+			users.map(function(user, index) {
+				result.forEach(function(id) {
+					if(user.user_id == id) {
+						users.splice(index, 1);
+					}
+				})
+			});
+			that.setState({users: users});
+			for(var i=0;i<users.length;i++) {
+				states[i] = 0;
+			}
+			that.setState({states: states});
+		}
+		func_ajax('/delete', 'get', arrParam,callback);
+	},
 	render: function() {
 		var that = this;
 		var users = that.state.users;
@@ -39383,8 +39456,8 @@ var Panel = React.createClass({displayName: "Panel",
 							date = new Date(user.birthday);
 							birthday = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
 							return (
-								React.createElement("tr", {onDoubleClick: that.trDblClick, onClick: that.trClick, style: {textAlign:'center'}}, 
-									React.createElement("th", {"data-index": index}, React.createElement("input", {id: 'checkbox' + index, type: "checkbox"})), 
+								React.createElement("tr", {key: index, onDoubleClick: that.trDblClick, onClick: that.trClick, style: {textAlign:'center'}}, 
+									React.createElement("th", {"data-index": index}, React.createElement("input", {"data-index": index, checked: that.state.states[index] == 0?null:"checked", type: "checkbox"})), 
 									React.createElement("th", {"data-index": index},  user.user_id), 
 									React.createElement("th", {"data-index": index},  user.name), 
 									React.createElement("th", {"data-index": index},  user.sex==1?'男':'女'), 
@@ -39397,7 +39470,7 @@ var Panel = React.createClass({displayName: "Panel",
 						});
 		return (
 			React.createElement("div", {className: "panel panel-default"}, 
-				React.createElement(Pheader, {count: 2, onClick: this.onClick}), 
+				React.createElement(Pheader, {onClick: this.onClick, del: this.del}), 
 				React.createElement("div", {className: "panel-body js-content"}, 
 					React.createElement("table", {className: "table table-hover"}, 
 						React.createElement("thead", null, 
@@ -39425,7 +39498,7 @@ var Panel = React.createClass({displayName: "Panel",
 
 function renderUser(data) {
 	React.render(
-		React.createElement(Panel, {count: "2", users: data.Users, positions: data.Positions}
+		React.createElement(Panel, {users: data.Users, positions: data.Positions}
 		),
 		document.getElementById('js-content')
 	);
