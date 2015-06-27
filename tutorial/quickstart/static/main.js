@@ -38988,15 +38988,6 @@ $(function() {
 });
 
 
-
-
-
-
-
-
-
-
-
 function func_ajax(url, type, param, func) {
 
 	$.ajax({
@@ -39041,16 +39032,20 @@ $(".js-user").click(function () {
 	UI 
 */
 var Pheader = React.createClass({displayName: "Pheader",
+	//焦点在input时候
 	onfocus: function() {
 		$('.search').addClass('active');
 	},
+	//焦点离开input的时候，并在输入内容为空时隐藏input
 	onblur: function() {
-		$('.search').removeClass('active');
-	},
-	onKeydown: function(e) {
-		var callback = function(result) {
-			console.log(result);
+		var keyword = React.findDOMNode(this.refs.keyword).value;
+		if (keyword === '') {
+			$('.search').removeClass('active');
 		}
+	},
+	//输入enter是发请求
+	onKeydown: function(e) {
+		var callback = this.props.onSearch;
 		if(e.keyCode == 13) {
 			var keyword = React.findDOMNode(this.refs.keyword).value;
 			func_ajax('/search', 'GET', {keyword: keyword}, callback);
@@ -39095,6 +39090,7 @@ var Umodal = React.createClass({displayName: "Umodal",
 		user.score = '';
 		return {user:user, positions: []}
 	},
+	//初始化 添加user的modal
 	initUserState: function () {
 		var user = Object();
 		var date = new Date();
@@ -39156,6 +39152,7 @@ var Umodal = React.createClass({displayName: "Umodal",
 		}
 		
 	},
+	//其他值改变之后
 	onChange: function (e) {
 		var field = e.target.getAttribute('data-field');
 		var value = e.target.value;
@@ -39163,6 +39160,7 @@ var Umodal = React.createClass({displayName: "Umodal",
 		user = this.setKeyValue(field, user, value);
 		this.setState({user: user});
 	},
+	//生日改变之后
 	onTimeChange: function(e) {
 		var user = this.state.user;
 		user = this.setKeyValue('birthday', user, e);
@@ -39191,6 +39189,7 @@ var Umodal = React.createClass({displayName: "Umodal",
 		this.setState({positions: pData});
 		
 	},
+	//修改之后的回调函数
 	callback: function(result) {
 		if (!('False' in result && result.False == false)) {
 			this.setState({user: result});
@@ -39217,6 +39216,7 @@ var Umodal = React.createClass({displayName: "Umodal",
 		}
 
 	},
+	//date to timestamp birthday to show
 	formatTime: function(birthday) {
 		var date = new Date(birthday);
 		return date.getTime().toString();
@@ -39325,7 +39325,78 @@ var Umodal = React.createClass({displayName: "Umodal",
 	}
 
 });
-
+/**
+*	分页	
+*/
+var Pager = React.createClass({displayName: "Pager",
+	getInitialState:function() {
+		return {curPage:0, total:0};
+	},
+	//换页
+	onClick: function(e) {
+		console.log($('.pageination .active'));
+		var curPage = e.target.getAttribute('data-page');
+		var total = this.state.total;
+		if(curPage <=0 || curPage > total) {
+			return ;
+		}
+		this.setState({curPage: curPage});
+	},
+	componentWillMount:function() {
+		var nextProps = this.props;
+		var curPage = nextProps.curPage;
+		var total = nextProps.total;
+		this.setState({curPage:curPage,total:total});
+	},
+	componentWillReceiveProps:function(nextProps) {
+		var curPage = nextProps.curPage;
+		var total = nextProps.total;
+		this.setState({curPage:curPage,total:total});
+	},
+	render:function() {
+		var curPage = parseInt(this.state.curPage);//当前页
+		var totalPage = parseInt(this.state.total);//总页数
+		var pageLi = [];
+		if(curPage >= 3 && curPage + 2 <= totalPage) {
+			for(var i = curPage-2; i <= curPage+2; i++) {
+				pageLi = pageLi.concat([i]);
+			}
+		}
+		if(curPage > 0 && curPage < 3) {
+			for(var i = 1; i <= 5; i++) {
+				pageLi = pageLi.concat([i]);
+			}
+		}
+		if( curPage + 2 > totalPage) {
+			for(var i=totalPage - 4; i <= totalPage; i++) {
+				pageLi = pageLi.concat([i]);
+			}	
+		}
+		var that = this;
+		var page = pageLi.map(function(page,index) {
+			if(page == curPage) {
+				return React.createElement("li", {className: "active"}, React.createElement("a", {href: "#", "data-page": page, onClick: that.onClick}, page));
+			}else {
+				return React.createElement("li", null, React.createElement("a", {href: "#", onClick: that.onClick, "data-page": page}, page));
+			}
+		});
+		return (
+				React.createElement("ul", {className: "pagination"}, 
+					React.createElement("li", null, 
+				      React.createElement("a", {href: "#", "aria-label": "Previous", onClick: this.onClick, "data-page": curPage - 1}, 
+				        React.createElement("span", {"aria-hidden": "true"}, "«")
+				      )
+				    ), 
+				    page, 
+				    React.createElement("li", null, 
+				      React.createElement("a", {href: "#", "aria-label": "Next", onClick: this.onClick, "data-page": curPage + 1}, 
+				        React.createElement("span", {"aria-hidden": "true"}, "»")
+				      )
+				    )
+				)
+		);
+	}
+});
 
 /**
 * 表格
@@ -39387,13 +39458,6 @@ var Panel = React.createClass({displayName: "Panel",
 
 		users.map(function(user) {
 			if(user.user_id == data.user_id) {
-				// user.user_id = data.user_id;
-				// user.name = data.name;
-				// user.sex = data.sex;
-				// user.age = data.age;
-				// user.birthday = data.birthday;
-				// user.position = data.position;
-				// user.score = data.score;
 				user = data;
 				arrUsers = arrUsers.concat(user);
 				flag = 1;
@@ -39449,6 +39513,9 @@ var Panel = React.createClass({displayName: "Panel",
 		}
 		func_ajax('/delete', 'get', arrParam,callback);
 	},
+	search: function(result) {
+		this.setState({users: result});
+	},
 	render: function() {
 		var that = this;
 		var users = that.state.users;
@@ -39470,7 +39537,7 @@ var Panel = React.createClass({displayName: "Panel",
 						});
 		return (
 			React.createElement("div", {className: "panel panel-default"}, 
-				React.createElement(Pheader, {onClick: this.onClick, del: this.del}), 
+				React.createElement(Pheader, {onClick: this.onClick, del: this.del, onSearch: this.search}), 
 				React.createElement("div", {className: "panel-body js-content"}, 
 					React.createElement("table", {className: "table table-hover"}, 
 						React.createElement("thead", null, 
@@ -39487,6 +39554,7 @@ var Panel = React.createClass({displayName: "Panel",
 							content
 						)
 					), 
+					React.createElement("div", {style: {float:'right'}}, React.createElement(Pager, {curPage: 1, total: 15})), 
 					React.createElement(Umodal, {data_users: this.state.user, data_positions: this.state.positions, onCallBack: this.callback, method: this.state.method})
 				)
 			)

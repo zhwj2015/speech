@@ -2,6 +2,7 @@
 
 
 from django.contrib.auth.models import User, Group
+from django.db.models import Q
 from rest_framework import viewsets
 from tutorial.quickstart.serializers import UserSerializer, GroupSerializer
 from django.http import HttpResponse
@@ -220,8 +221,13 @@ def delete(request):
 
 
 def search(request):
-    print request.GET.get('keyword')
-    return JSONResponse({"False": False})
+    try:
+        keyword =  request.GET.get('keyword')
+        users = Users.objects.filter(Q(user_id__icontains = keyword) | Q(name__icontains = keyword) | Q(position__name__icontains=keyword))
+        serializers = UsersSerializer(users, many=True)
+        return JSONResponse(Util.serializeToJSON(serializers))
+    except Exception, e:
+        return JSONResponse({"False": False})
 # class Users11z():
 #     def user(request):
 #         users = Users.objects.all()
