@@ -53,10 +53,14 @@ urlpatterns += [
 urlpatterns += [
     url(r'^index', viewss.index),
     url(r'^login', viewss.login),
+    url(r'^logout', viewss.logout),
     url(r'^main', viewss.main),
+    # user
     url(r'^user', viewss.user),
     url(r'^update',viewss.update),
     url(r'^add', viewss.add),
     url(r'^delete', viewss.delete),
     url(r'^search', viewss.search),
+
+
 ]

@@ -4,7 +4,6 @@ import datetime
 from django.utils.six import BytesIO
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
-from django.core import serializers
 import time
 
 class Util():

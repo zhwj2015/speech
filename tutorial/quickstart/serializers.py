@@ -60,6 +60,7 @@ class UsersSerializer(serializers.ModelSerializer):
             'birthday',
             'position',
             'score',
+            'add_time',
         )
         depth = 1
 class KeywordsSerializer(serializers.ModelSerializer):

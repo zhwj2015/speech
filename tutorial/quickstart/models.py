@@ -56,7 +56,9 @@ class Users(models.Model):
     birthday = models.DateTimeField()
     position = models.ForeignKey('Positions')
     score = models.IntegerField()
-
+    add_time =  models.DateTimeField(auto_now_add=True)
+    class Meta:
+        ordering = ('add_time',)
 
 
 

@@ -16,12 +16,12 @@ from rest_framework.decorators import detail_route
 from tutorial.quickstart.models import Users, Admin, Keymodels, Keywords, Relations, Positions
 from tutorial.quickstart.serializers import UsersSerializer, AdminSerializer, KeymodelsSerializer, KeywordsSerializer, RelationsSerializer, PositionsSerializer
 from django.contrib.auth.hashers import make_password, check_password
-from django.shortcuts import render_to_response
 from django.template.context_processors import csrf
 from tutorial.quickstart.util import Util
 
 from django.http.response import HttpResponseRedirect
-from django.core import serializers
+from  datetime import *
+
 class JSONResponse(HttpResponse):
     '''
     An HttpResponse that renders its content into JSON
@@ -121,7 +121,8 @@ def Admin_list(request, format=None):
 '''
 
 
-from django.shortcuts import render
+from django.shortcuts import render, render_to_response
+
 '''
 controller
 '''
@@ -137,27 +138,56 @@ def index(request):
     redict to main.html
 '''
 def main(request):
-    username = request.session['uid']
-    c = {'username': username}
-    c.update(csrf(request))
-    return render_to_response('main.html', c)
-    
+    try:
+        username = request.session['uid']
+        c = {'username': username}
+        c.update(csrf(request))
+        return render_to_response('main.html', c)
+    except Exception,e:
+        return HttpResponseRedirect('/index')
+
+
 '''
-    get the Users
+    获取职工信息，通过关键字获取还有分页
     :return JSONResponse Users and Positions
 '''
 def user(request):
-    users = Users.objects.all()
-    positions = Positions.objects.all()
-    #print users.user_id
-    object_all = list(users) + list(positions)
-    #the set of users
-    ss = UsersSerializer(users, many=True)
-    #the set of positions
-    ps = PositionsSerializer(positions, many=True)
-    sJson = Util.serializeToJSON(ss)
-    pJson = Util.serializeToJSON(ps)
-    return JSONResponse({'Users': sJson, 'Positions': pJson})
+    try:
+        try:
+            username = request.session['uid']
+            if username == None:
+                return HttpResponseRedirect({'redirect':'/index'})
+        except Exception,e:
+            return JSONResponse({'redirect':'/index'})
+        data =  dict(request.GET)
+        page = 1
+        keyword = ''
+        num = 10
+        if data.has_key('page'):
+            page = int(data.get('page')[0])
+        if data.has_key('keyword'):
+            keyword = str(data.get('keyword')[0])
+        users = Users.objects.filter(Q(user_id__icontains = keyword) | Q(name__icontains = keyword) | Q(position__name__icontains=keyword)).order_by('add_time').reverse()
+        if users.count() % num == 0:
+            pageNum = int(users.count() / num)
+        else:
+            pageNum = int(users.count() / num) + 1
+
+        if pageNum == 0:
+            pageNum = 1
+        users = users[(page-1)*num:(page)*num]
+        positions = Positions.objects.all()
+        #print users.user_id
+        object_all = list(users) + list(positions)
+        #the set of users
+        ss = UsersSerializer(users, many=True)
+        #the set of positions
+        ps = PositionsSerializer(positions, many=True)
+        sJson = Util.serializeToJSON(ss)
+        pJson = Util.serializeToJSON(ps)
+        return JSONResponse({'Users': sJson, 'Positions': pJson, 'pageNum': pageNum, 'curPage':page})
+    except Exception,e:
+        return JSONResponse({'False':False})
     
 '''
     update the User
@@ -184,7 +214,9 @@ def update(request):
     except Exception, e:
         return JSONResponse({"False":False})
 
-
+'''
+    添加用户信息
+'''
 def add(request):
     try:
         data = request.POST
@@ -196,13 +228,19 @@ def add(request):
         position = Positions.objects.all().get(pid=data.get('data[position][pid]')[0])
         score = data.get('data[score]')[0]
         user_id = str(Util.getTimestamp())
-        user = Users(user_id=user_id, name=name,sex=sex, age=age, birthday=birthday, position=position, score=score)
+        add_time = datetime.now()
+        user = Users(user_id=user_id, name=name,sex=sex, age=age, birthday=birthday, position=position, score=score,add_time=add_time)
         user.save()
         serializer = UsersSerializer(user)
         return JSONResponse(Util.serializeToJSON(serializer))
     except Exception, e:
         return JSONResponse({'False': False})
 
+
+'''
+    删除多条用户信息
+    :returns 如果用户信息删除成功，返回多用户id，如果失败，恢复用户信息，返回False
+'''
 def delete(request):
     try:
         data = request.GET
@@ -220,12 +258,28 @@ def delete(request):
         return JSONResponse({'False': False})
 
 
+'''
+    通过关键字搜索用户信息
+    :returns type JSON 用户信息
+'''
+
 def search(request):
     try:
         keyword =  request.GET.get('keyword')
-        users = Users.objects.filter(Q(user_id__icontains = keyword) | Q(name__icontains = keyword) | Q(position__name__icontains=keyword))
+        page = 1
+        num = 10
+        users = Users.objects.filter(Q(user_id__icontains = keyword) | Q(name__icontains = keyword) | Q(position__name__icontains=keyword)).order_by('add_time').reverse()
+        if users.count() % num == 0:
+            pageNum = int(users.count() / num)
+        else:
+            pageNum = int(users.count() / num) + 1
+        if pageNum == 0:
+            pageNum = 1
+        users = users[(page-1)*num:(page)*num]
         serializers = UsersSerializer(users, many=True)
-        return JSONResponse(Util.serializeToJSON(serializers))
+        json_user = Util.serializeToJSON(serializers)
+        # json_return = JSONRenderer().render({'users':json_user,'curPage': page,'total':pageNum})
+        return JSONResponse({'users':json_user,'curPage': page,'total':pageNum,'keyword':keyword})
     except Exception, e:
         return JSONResponse({"False": False})
 # class Users11z():
@@ -256,7 +310,6 @@ def login(request):
         blnPwd = check_password(pwd, admin.password)
         if blnPwd:
             request.session['uid'] = username
-            print request.session['uid']
             return HttpResponseRedirect("/main")
         else:
             return render(request, 'index.html', {'error_msg': '用户名或密码错误'})
@@ -268,8 +321,9 @@ def login(request):
 def logout(request):
     try:
         del request.session['uid']
+        return HttpResponseRedirect('/index')
     except KeyError:
-        pass
+        return HttpResponseRedirect('/index')
 
 
 def sign(request):

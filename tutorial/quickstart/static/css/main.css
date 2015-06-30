@@ -1,3 +1,14 @@
+body {
+	padding-top:70px;
+}
+
+
+
+
+
+
+
+
 .divider {
   height: 1px;
   margin: 9px 1px;
@@ -23,16 +34,24 @@
 	width:190px;
 }
 .search .form-control {
- 	height: 24px;
- 	line-height: 24px;
+ 	height: 30px;
+ 	line-height: 30px;
  	width: 0px;
  	padding: 0;
 }
 .search .input-group-addon {
-	height:22px;
-	line-height: 22px;
+	height:28px;
+	line-height: 28px;
 	padding-top:0;
 	padding-bottom:0;
+}
+
+.remove-position {
+	position: absolute;
+	z-index:12;
+	top:8px;
+	left:175px;
+	display: none;
 }
 /*.search.active .form-control {
 	border: 1px solid #ccc;
