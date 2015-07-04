@@ -16,7 +16,6 @@ $(".form-signin").submit(function () {
 	if (username != null && pwd != null) {
 		return true;
 	}
-
 	return false;
 });
 

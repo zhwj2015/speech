@@ -149,6 +149,7 @@ def main(request):
 
 '''
     获取职工信息，通过关键字获取还有分页
+    param: page->分页查询时使用,表示当前页码,keyword->搜索用户时使用,表示搜索关键字
     :return JSONResponse Users and Positions
 '''
 def user(request):
@@ -188,7 +189,14 @@ def user(request):
         return JSONResponse({'Users': sJson, 'Positions': pJson, 'pageNum': pageNum, 'curPage':page})
     except Exception,e:
         return JSONResponse({'False':False})
-    
+
+def getUserById(request):
+    user_id = request.GET['user_id']
+    user = Users.objects.all().get(user_id=user_id)
+    userSerialize = UsersSerializer(user)
+    userJson = Util.serializeToJSON(userSerialize)
+    return JSONResponse({'user':userJson})
+
 '''
     update the User
     :return if the update is fail return False and if the update is success return User object

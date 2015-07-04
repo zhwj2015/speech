@@ -34,14 +34,15 @@ body {
 	width:190px;
 }
 .search .form-control {
- 	height: 30px;
- 	line-height: 30px;
+ 	height: 24px;
+ 	line-height: 24px;
  	width: 0px;
  	padding: 0;
 }
 .search .input-group-addon {
-	height:28px;
-	line-height: 28px;
+	height:22px;
+	line-height: 22px;
+
 	padding-top:0;
 	padding-bottom:0;
 }
@@ -53,6 +54,23 @@ body {
 	left:175px;
 	display: none;
 }
-/*.search.active .form-control {
-	border: 1px solid #ccc;
-}*/
+
+
+.form-group .btn-file {
+	padding:0;
+	margin:0;
+	width:40px;
+	height:34px;
+}
+.form-group .btn-file .upload {
+	opacity: 0;
+	width:40px;
+	height:34px;
+	position: relative;
+	left:-5px;
+	top:-20px;
+	border:1px solid #ddd;
+}
+
+
+

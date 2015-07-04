@@ -61,6 +61,7 @@ urlpatterns += [
     url(r'^add', viewss.add),
     url(r'^delete', viewss.delete),
     url(r'^search', viewss.search),
+    url(r'^get', viewss.getUserById),
 
 
 ]
