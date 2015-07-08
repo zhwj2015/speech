@@ -39004,6 +39004,21 @@ require('react-bootstrap');
 var DateTimeField = require('react-bootstrap-datetimepicker');
 var func_ajax = require('./public.js');
 
+// var Userlist = React.createClass({
+// 	render:function() {
+
+// 	}
+// });
+
+
+
+
+
+/**
+  * 文件上传的导航栏，多文件或者单文件
+  * states表示那个导航处于触发状态
+  *
+*/
 var Tab = React.createClass({displayName: "Tab",
 	getInitialState:function() {
 		return {states:[]}
@@ -39054,26 +39069,41 @@ var Tab = React.createClass({displayName: "Tab",
 			)
 	}
 });
+
+/**
+*	显示要上传的用户的信息
+*
+*/
 var Uinfo = React.createClass({displayName: "Uinfo",
 	getInitialState:function() {
-		return {user:null}
+		return {users:[], user_id:''}
 	},
-	// componentWillMount:function() {
-	// 	var user = this.props.user;
-	// 	this.setState({user:user});
-	// },
-	// componentWillReceiveProps:function(nextProps) {
-	// 	var user = nextProps.user;
-	// 	this.setState({user:user});
-	// },
+	componentWillMount:function() {
+		var state = this.props.state;//状态，用户表示用户信息是否为空
+		if(state == true) {
+			var user = this.initParam("user");
+			this.setState({users:[user]});
+		}
+	},
+	componentWillReceiveProps:function(nextProps) {
+		var state = nextProps.state;
+		if(state == true) {
+			var user = this.initParam("user");
+			this.setState({users:[user]});
+		}
+	},
+	//但职工号变化是调用
 	handleChange:function() {
-		var user_id = React.findDOMNode(this.refs.user_id).value;
+		var user_id = React.findDOMNode(this.refs.user_id).value;//职工号
 		var self = this;
 		var callback = function(result) {
-			self.setState({user:result.user});
+			self.setState({users:result.user});
+			self.setState({user_id:user_id});
 		}
+		//通过职工号获取用户信息
 		func_ajax("/get", "GET", {user_id:user_id}, callback);
 	},
+	//手动初始化信息
 	initParam:function(param) {
 		switch(param) {
 			case "user":
@@ -39086,22 +39116,39 @@ var Uinfo = React.createClass({displayName: "Uinfo",
 			break;
 		}
 	},
+	//向外提供获取职工号的接口
 	getUserId:function() {
 		var user = this.state.user;
 		return user.user_id;
 	},
 	render: function() {
-		user = this.state.user;
-		if(user == null) {
+		var users = this.state.users;
+		var tips = '';
+		if(users.length == 0) {
 			user = this.initParam("user");
+		}else if(users.length == 1) {
+			user = this.state.users[0];
+		}else {
+			tips = this.state.users.map(function(user, index) {
+				return (
+					React.createElement("li", {style: {listStyle:'none'}}, "user.user_id")
+					)
+			});
 		}
+		var user_id = this.state.user_id;
 		return (
 				React.createElement("div", {className: "form-horizontal", role: "form"}, 
+					React.createElement("div", {className: ""}, 
+						React.createElement("ul", null, 
+							tips
+						)
+					), 
 					React.createElement("div", {className: "form-group"}, 
 						React.createElement("div", {className: "col-md-6 row"}, 
 							React.createElement("label", {htmlFor: "user_id", className: "col-md-2 control-label"}, "职工号"), 
 							React.createElement("div", {className: "col-md-4"}, 
-								React.createElement("input", {type: "text", className: "form-control", name: "uid", id: "user_id", ref: "user_id", value: user.user_id, onChange: this.handleChange})
+								React.createElement("input", {type: "text", className: "form-control", name: "uid", id: "user_id", ref: "user_id", value: user_id, 
+										onChange: this.handleChange})
 							)
 						)
 					), 
@@ -39109,7 +39156,7 @@ var Uinfo = React.createClass({displayName: "Uinfo",
 						React.createElement("div", {className: "col-md-6 row"}, 
 							React.createElement("label", {htmlFor: "name", className: "col-md-2 control-label"}, "姓名"), 
 							React.createElement("div", {className: "col-md-4"}, 
-								React.createElement("input", {type: "text", className: "form-control", id: "name", value: user.name})
+								React.createElement("input", {type: "text", className: "form-control", id: "name", value: user.name, readOnly: true})
 							)
 						)
 					), 
@@ -39117,7 +39164,7 @@ var Uinfo = React.createClass({displayName: "Uinfo",
 						React.createElement("div", {className: "col-md-6 row"}, 
 							React.createElement("label", {htmlFor: "position", className: "col-md-2 control-label"}, "职位"), 
 							React.createElement("div", {className: "col-md-4"}, 
-								React.createElement("input", {type: "text", className: "form-control", id: "position", value: user.position.name})
+								React.createElement("input", {type: "text", className: "form-control", id: "position", value: user.position.name, readOnly: true})
 							)
 						)
 					), 
@@ -39125,7 +39172,7 @@ var Uinfo = React.createClass({displayName: "Uinfo",
 						React.createElement("div", {className: "col-md-6 row"}, 
 							React.createElement("label", {htmlFor: "add_time", className: "col-md-2 control-label"}, "入职时间"), 
 							React.createElement("div", {className: "col-md-4"}, 
-								React.createElement("input", {type: "text", className: "form-control", id: "add_time", value: user.add_time})
+								React.createElement("input", {type: "text", className: "form-control", id: "add_time", value: user.add_time, readOnly: true})
 							)
 						)
 					)
@@ -39143,7 +39190,7 @@ var BodyContent = React.createClass({displayName: "BodyContent",
 	getInitialState:function() {
 		var now = new Date();
 		var date = now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate();
-		return {date:date, files:[],multiple:false};
+		return {date:date, files:[],multiple:false,state:false};
 	},
 	//刚挂载上时，初始化一些state
 	componentWillMount:function() {
@@ -39154,15 +39201,56 @@ var BodyContent = React.createClass({displayName: "BodyContent",
 			this.setState({multiple:true});
 		}
 	},
+	componentDidMount: function() {
+		var objUrl = window.URL || window.webkitURL;
+		//多文件是用于显示多个文件
+		// <source src={file} type="audio/wav"/>
+		// if(multiple) {
+		// 	mulContent = this.state.files.map(function(file, index) {
+		// 		data = objUrl.createObjectURL(file);
+		// 		return <li style={{listStyle:'none'}}>
+		// 					<audio controls>
+		// 					  <source key={index} src={data} type="audio/wav"/>
+		// 					Your browser does not support the audio element.
+		// 					</audio>
+		// 					<button className="btn btn-primary"><span className="glyphicon glyphicon-upload"></span>上传</button>
+		// 					<button className="btn btn-warning"><span className="glyphicon glyphicon-ban-circle"></span>取消</button>
+		// 				</li>
+		// 	});
+		// }
+
+		var template_audio = "<li style='list-style:none'>"+
+			"<audio controls>"+
+			"  <source src={data} type='audio/wav'/>"+
+			"Your browser does not support the audio element."+
+			"</audio>"+
+			
+		"</li>"
+		var btn_submit = "<button class='btn btn-primary'><span class='glyphicon glyphicon-upload'></span>上传</button>";
+		var btn_cancel = "<button class='btn btn-warning'><span class='glyphicon glyphicon-ban-circle'></span>取消</button>";
+		console.log(template_audio);
+		console.log(template_audio.replace(/\{data\}/,"test"));
+
+		 $('#wavfile').fileupload({
+		    dataType: 'json',
+		    add: function (e, data) {
+		    	var src = objUrl.createObjectURL(data.files[0]);
+		        data.context = $("<div/>").append(template_audio.replace(/\{data\}/, src))
+		            .appendTo($("#wav-preview")).append($(btn_submit).click(function(){
+		                data.context = $('<p/>').text('Uploading...').replaceAll($(this));
+		                data.submit();
+		            }));
+		    },
+		    done: function (e, data) {
+		        data.context.text('Upload finished.');
+		    }
+		});
+	},
 	//更新props是调用，重置state
 	componentWillReceiveProps: function(nextProps){
 		var multiple = nextProps.multiple;
-		if(this.state.multiple == multiple) {
-			if(multiple == false) {
-				this.setState({multiple:false});
-			}else {
-				this.setState({multiple:true});
-			}
+		if(this.state.multiple != multiple) {
+			this.setState({multiple:multiple});
 		}
 	},
 	formatTime:function(t) {
@@ -39186,41 +39274,28 @@ var BodyContent = React.createClass({displayName: "BodyContent",
 		var date = time.getFullYear() + "-" + (time.getMonth() + 1) + "-" + time.getDate();
 		this.setState({date:date});
 	},
-	// handleSubmit: function() {
-	// 	var recordTime = this.state.date;
-	// 	var uid = this.refs.info.getUserId();
-	// 	var callback = function(result) {
-	// 		console.log(result);
-	// 	}
-	// 	var files = this.state.files;
-	// 	var arrParam = {uid:uid, file:files[0]};
-	// 	func_ajax("/Wavs", "POST",arrParam, callback);
-
-	// 	return false;
-	// },
+	//无刷新上传文件
+	onload: function(e){
+		var $iframe  = $(e.target),
+			doc = ($iframe[0].contentWindow || $iframe[0].contentDocument).document,
+			response = JSON.parse(doc.body.innerText);
+		if(response.status == true) {
+			this.setState({state:true});
+			this.setState({files:[]});
+		}else {
+			this.setState({state:false});
+		}
+	},
 	render:function() {
 		var multiple = this.state.multiple?true:false;
 		var mulContent = '';
-		var objUrl = window.URL || window.webkitURL;
-		//多文件是用于显示多个文件
-				  // <source src={file} type="audio/wav"/>
-		if(multiple) {
-			mulContent = this.state.files.map(function(file) {
-				data = objUrl.createObjectURL(file);
-				return React.createElement("li", null, 
-				React.createElement("audio", {controls: true}, 
-				  React.createElement("source", {src: data, type: "audio/wav"}), 
-				"Your browser does not support the audio element."
-				)
-				)
-			});
-		}
+		
 		var csrftoken = window.csrftoken;
 		return (
 			React.createElement("div", null, 
-				React.createElement("form", {className: "form-horizontal", role: "form", method: "POST", encType: "multipart/form-data", action: "/Wavs/"}, 
+				React.createElement("form", {className: "form-horizontal", role: "form", method: "POST", encType: "multipart/form-data", action: "/Wavs/", target: "fileupload"}, 
 					React.createElement("input", {type: "hidden", name: "csrfmiddlewaretoken", value: csrftoken}), 
-					React.createElement(Uinfo, {ref: "info"}), 
+					React.createElement(Uinfo, {ref: "info", state: this.state.state}), 
 					React.createElement("div", {role: "separator", className: "divider"}), 
 				    React.createElement("div", {className: "form-group"}, 
 				        React.createElement("div", {className: "col-md-6 row"}, 
@@ -39239,13 +39314,14 @@ var BodyContent = React.createClass({displayName: "BodyContent",
 			                		React.createElement("input", {type: "text", className: "form-control file-name", value: this.state.files, readOnly: true}), 
 					                React.createElement("span", {className: "input-group-btn"}, 
 				                		React.createElement("span", {className: "btn btn-primary btn-file"}, 
-				                			"上传", React.createElement("input", {type: "file", className: "from-control upload", name: "wavs", onChange: this.onFileChange, value: this.state.files, id: "wavfile", multiple: multiple})
+				                			"上传", React.createElement("input", {type: "file", className: "from-control upload", name: "wavs", onChange: this.onFileChange, id: "wavfile", multiple: multiple})
 				                		)
 				                	)
 		                		)
 			                )
 				        )
 				    ), 
+				    React.createElement("iframe", {src: "javascript:false;", name: "fileupload", id: "fileupload", style: {display:'none'}, onLoad: this.onload}), 
 
 				    React.createElement("div", {className: "form-group"}, 
 				    	React.createElement("div", {className: "col-md-6"}, 
@@ -39253,8 +39329,8 @@ var BodyContent = React.createClass({displayName: "BodyContent",
 				    	)
 				    )
 				), 
-        		React.createElement("div", {style: {overflowY: "scroll",height:'90px'}}, 
-        			mulContent
+        		React.createElement("div", {id: "wav-preview", style: {overflowY: "scroll",height:'90px'}}
+        			
         		)
         		)
 			);

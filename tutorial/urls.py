@@ -64,4 +64,6 @@ urlpatterns += [
     url(r'^get', viewss.getUserById),
 
 
+    url(r'^test', viewss.testUpload),
+
 ]

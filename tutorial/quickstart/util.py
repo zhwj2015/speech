@@ -5,6 +5,7 @@ from django.utils.six import BytesIO
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 import time
+from django.http import HttpResponse
 
 class Util():
 
@@ -44,3 +45,12 @@ class Util():
     # def modelToSerializer(model):
     #     return  serializers.serialize('json', model, use_natural_foreign_keys=True, use_natural_primary_keys=False)
 
+
+class JSONResponse(HttpResponse):
+    '''
+    An HttpResponse that renders its content into JSON
+    '''
+    def __init__(self, data, **kwargs):
+        content = JSONRenderer().render(data)
+        kwargs['content_type'] = 'application/json'
+        super(JSONResponse, self).__init__(content, **kwargs)

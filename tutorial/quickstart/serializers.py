@@ -95,7 +95,7 @@ class RelationsSerializer(serializers.ModelSerializer):
         )
 
 class WavsSerializer(serializers.ModelSerializer):
-    user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    user_id = serializers.PrimaryKeyRelatedField(queryset=Users.objects.all())
     class Meta:
         model = Wavs
         field = (

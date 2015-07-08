@@ -66,7 +66,7 @@ class Wavs(models.Model):
     wav_id = models.CharField(max_length=20)
     name = models.CharField(max_length=50)
     path = models.CharField(max_length=500)
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField()
     user_id = models.ForeignKey('Users')
     score = models.IntegerField(12)
 

@@ -17,19 +17,11 @@ from tutorial.quickstart.models import Users, Admin, Keymodels, Keywords, Relati
 from tutorial.quickstart.serializers import UsersSerializer, AdminSerializer, KeymodelsSerializer, KeywordsSerializer, RelationsSerializer, PositionsSerializer
 from django.contrib.auth.hashers import make_password, check_password
 from django.template.context_processors import csrf
-from tutorial.quickstart.util import Util
+from tutorial.quickstart.util import Util, JSONResponse
 
 from django.http.response import HttpResponseRedirect
 from  datetime import *
 
-class JSONResponse(HttpResponse):
-    '''
-    An HttpResponse that renders its content into JSON
-    '''
-    def __init__(self, data, **kwargs):
-        content = JSONRenderer().render(data)
-        kwargs['content_type'] = 'application/json'
-        super(JSONResponse, self).__init__(content, **kwargs)
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -191,11 +183,14 @@ def user(request):
         return JSONResponse({'False':False})
 
 def getUserById(request):
-    user_id = request.GET['user_id']
-    user = Users.objects.all().get(user_id=user_id)
-    userSerialize = UsersSerializer(user)
-    userJson = Util.serializeToJSON(userSerialize)
-    return JSONResponse({'user':userJson})
+    try:
+        user_id = request.GET['user_id']
+        user = Users.objects.filter(Q(user_id__icontains=user_id))
+        userSerialize = UsersSerializer(user, many=True)
+        userJson = Util.serializeToJSON(userSerialize)
+        return JSONResponse({'user':userJson})
+    except Exception, e:
+        pass
 
 '''
     update the User
@@ -344,3 +339,5 @@ def sign(request):
         return HttpResponse(e)
 
 
+def testUpload(request):
+    return render_to_response('testupload.html')
